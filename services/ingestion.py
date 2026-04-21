@@ -1,8 +1,11 @@
 import json
+import logging
 from pathlib import Path
 from core.database import get_db_connection
-from services.embedding import get_vector
+from services.embedding import get_vector_for_db
 from utils.currency import clean_brazilian_price
+
+logger = logging.getLogger(__name__)
 
 def ingest_scraped_data():
     """Reads all JSON files in the data_buffer and pushes them to pgvector."""
@@ -15,7 +18,16 @@ def ingest_scraped_data():
     total_inserted = 0
 
     for json_file in data_dir.glob("*.json"):
-        domain_name = json_file.stem
+        file_stem = json_file.stem
+        
+        # Parse domain__product format; fallback to file_stem if no product suffix
+        if "__" in file_stem:
+            domain_name, product_query = file_stem.split("__", 1)
+            logger.info("Ingesting from %s: domain=%s product=%s", json_file.name, domain_name, product_query)
+        else:
+            domain_name = file_stem
+            product_query = None
+            logger.info("Ingesting from %s: domain=%s", json_file.name, domain_name)
         
         with open(json_file, 'r') as f:
             data = json.load(f)
@@ -23,7 +35,7 @@ def ingest_scraped_data():
         for item in data:
             clean_price = clean_brazilian_price(item.get('price'))
             title = item.get('title', '')
-            vector = get_vector(title)
+            vector = get_vector_for_db(title)
             
             cur.execute("""
                 INSERT INTO product_listings (domain, title, price_numeric, url, seller, title_vector)
