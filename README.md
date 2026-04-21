@@ -97,9 +97,36 @@ curl -X POST "http://localhost:8000/api/v1/pipeline/scrape" \
     "urls": [
       "https://example.com/category/headphones",
       "https://example2.com/search?q=headphones"
-    ]
+    ],
+    "products": [
+      "Sony WH-1000XM5",
+      "Bose QuietComfort Ultra"
+    ],
+    "max_results": 10
   }'
 ```
+
+### A2) Live scrape stream
+
+Use the live streaming endpoint to watch progress as each domain is processed:
+
+```bash
+curl -N -X POST "http://localhost:8000/api/v1/pipeline/scrape/live" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example.com/category/headphones",
+      "https://example2.com/search?q=headphones"
+    ],
+    "products": [
+      "Sony WH-1000XM5",
+      "Bose QuietComfort Ultra"
+    ],
+    "max_results": 10
+  }'
+```
+
+This returns server-sent events like `Starting ...`, `Crawling ...`, and `Saved ...` while the scraper runs.
 
 ### B) Ingest scraped files into DB
 
