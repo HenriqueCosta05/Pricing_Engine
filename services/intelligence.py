@@ -1,12 +1,12 @@
 from core.database import get_db_connection
-from services.embedding import get_vector
+from services.embedding import get_vector_for_search
 from core.config import SIMILARITY_THRESHOLD
 
 def get_pricing_intelligence(target_product_name: str, threshold: float = SIMILARITY_THRESHOLD):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    query_vector = get_vector(target_product_name)
+    query_vector = get_vector_for_search(target_product_name)
 
     cur.execute("""
         SELECT title, price_numeric, url 
